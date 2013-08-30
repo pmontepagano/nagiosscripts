@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Dmitry Vayntrub 03/11/2009
 #
 # The plugin shows the uptime and optionally
@@ -11,6 +11,7 @@
 #
 #######################################################################
 VERSION="check_uptime v1.06"
+export LC_ALL=C
 
 # Exit-Codes:
 STATE_OK=0
