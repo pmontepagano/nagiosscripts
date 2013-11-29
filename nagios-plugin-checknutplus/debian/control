@@ -1,0 +1,14 @@
+Source: nagios-plugin-checknutplus
+Section: unknown
+Priority: extra
+Maintainer: LiHAS Stuttgart <support@lihas.de>
+Build-Depends: debhelper (>= 7.0.50~)
+Standards-Version: 3.8.4
+Homepage: "http://www.lihas.de/"
+
+Package: nagios-plugin-checknutplus
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, perl, nut, procps
+Description: nagios plugin reporting the status of the UPS using NUT
+  nagios plugin reporting the status of the uninterruptable power supply 
+  using networkupstools. Monitor every parameter including serial and model.

@@ -1,0 +1,408 @@
+<!doctype refentry PUBLIC "-//OASIS//DTD DocBook V4.1//EN" [
+
+<!-- Process this file with docbook-to-man to generate an nroff manual
+     page: `docbook-to-man manpage.sgml > manpage.1'.  You may view
+     the manual page with: `docbook-to-man manpage.sgml | nroff -man |
+     less'.  A typical entry in a Makefile or Makefile.am is:
+
+manpage.1: manpage.sgml
+	docbook-to-man $< > $@
+
+    
+	The docbook-to-man binary is found in the docbook-to-man package.
+	Please remember that if you create the nroff version in one of the
+	debian/rules file targets (such as build), you will need to include
+	docbook-to-man in your Build-Depends control field.
+
+  -->
+
+  <!-- Fill in your name for FIRSTNAME and SURNAME. -->
+  <!ENTITY dhfirstname "<firstname>Christian</firstname>">
+  <!ENTITY dhsurname   "<surname>Recktenwald</surname>">
+  <!-- Please adjust the date whenever revising the manpage. -->
+  <!ENTITY dhdate      "<date>September, 19 2013</date>">
+  <!-- SECTION should be 1-8, maybe w/ subsection other parameters are
+       allowed: see man(7), man(1). -->
+  <!ENTITY dhsection   "<manvolnum>1</manvolnum>">
+  <!ENTITY dhemail     "<email>support@lihas.de</email>">
+  <!ENTITY dhusername  "LiHAS">
+  <!ENTITY dhucpackage "<refentrytitle>check_nut_plus</refentrytitle>">
+  <!ENTITY dhpackage   "check_nut_plus">
+
+  <!ENTITY debian      "<productname>LiHAS</productname>">
+  <!ENTITY gnu         "<acronym>GNU</acronym>">
+  <!ENTITY upsc        "<command>upsc</command>(8)">
+  <!ENTITY nrpe        "<command>nrpe</command>(8)">
+]>
+
+<refentry>
+  <refentryinfo>
+    <address>
+      &dhemail;
+    </address>
+    <author>
+      &dhfirstname;
+      &dhsurname;
+    </author>
+    <copyright>
+      <year>2010</year>
+      <holder>&dhusername;</holder>
+    </copyright>
+    &dhdate;
+  </refentryinfo>
+  <refmeta>
+    &dhucpackage;
+
+    &dhsection;
+  </refmeta>
+  <refnamediv>
+    <refname>&dhpackage;</refname>
+
+    <refpurpose>This nagios plugin reports the status of the UPS using NUT.</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>&dhpackage; [ -D ] -d DEVICE -v CHECK_DESC [ -v CHECK_DESC ... ]
+	  </command>
+      <command>&dhpackage; [ -V | -h ] </command>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+  <refsect1>
+    <title>DESCRIPTION</title>
+
+    <para>This manual page documents the
+      <command>&dhpackage;</command> 
+      command.</para>
+
+    <para><command>&dhpackage;</command> is a program to 
+	generate an &nrpe; suitable output of &upsc;,
+	in short a nagios plugin for uninterruptable power supplies (UPS).
+	</para>
+
+  </refsect1>
+  <refsect1>
+    <title>FEATURES</title>
+	<itemizedlist>
+		<listitem>
+			<para>
+			Watch and evaluate every value  &upsc; can report.
+			</para>
+		</listitem>
+		<listitem>
+			<para>
+			The kind of comparison can be specified by OPERATOR.
+			</para>
+		</listitem>
+		<listitem>
+			<para>
+			Multiple and combined comparison can be specified.
+			</para>
+		</listitem>
+	</itemizedlist>
+  </refsect1>
+  <refsect1>
+    <title>OPTIONS</title>
+
+    <variablelist>
+      <varlistentry>
+        <term><option>-d DEVICE</option>
+        </term>
+        <listitem>
+          <para>
+		  	 A device description  &upsc; would accept.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-v CHECK_DESC</option>
+        </term>
+        <listitem>
+          <para>
+		  A check desciption. See CHECK DESCIPTION below.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-D</option>
+        </term>
+        <listitem>
+          <para>
+		  Enable debugging.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-V</option>
+        </term>
+        <listitem>
+          <para>
+			Print version information and exit.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-h</option>
+        </term>
+        <listitem>
+          <para>
+		    Print help and exit.
+          </para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+  <refsect1>
+    <title>CHECK DESCIPTION</title>
+	<itemizedlist>
+	  <listitem>
+		<para>
+			<command>check_nut-plus -d DEVICE -v CHECK_DESC [ -v CHECK_DESC ... ]</command>
+		</para>
+	  </listitem>
+	  <listitem>
+		<para>
+			<command>DEVICE :</command> a device description &upsc; would accept.
+		</para>
+	  </listitem>
+	  <listitem>
+		<para>
+			<command>CHECK_DESC := UPSCKEY '=' SEVERITY OPERATOR VALUE [ ':' SEVERITY OPERATOR VALUE ] ...</command>
+		</para>
+	  </listitem>
+	  <listitem>
+		<para>
+			<command>UPSCKEY :</command> key string as listed by &upsc;, see 'man upsc'
+		</para>
+	  </listitem>
+	  <listitem>
+		<para>
+			<command>SEVERITY := { 'w' | 'c' }</command>
+		</para>
+		<itemizedlist>
+			<listitem>
+			  <para>
+				  <command>'w'</command>: warning
+			  </para>
+			</listitem>
+			<listitem>
+			  <para>
+				  <command>'c'</command>: critical errors
+			  </para>
+			</listitem>
+		</itemizedlist>
+	  </listitem>
+	  <listitem>
+		<para>
+			<command>OPERATOR := { '>=' | '>' | '&lt;' | '&lt;=' | '==' | '=' | '&lt;>' | '!=' | '~' | '!~' }</command>
+		</para>
+		<itemizedlist>
+			<listitem>
+			  <para>
+                <command>'>='</command>: numerical comparison, reported value is greater or equal than VALUE
+			  </para>
+			</listitem>
+			<listitem>
+			  <para>
+                <command>'>' </command>: numerical comparison, reported value is greater than VALUE
+			  </para>
+			</listitem>
+			<listitem>
+			  <para>
+                <command>'&lt;='</command>: numerical comparison, reported value is less or equal than VALUE
+			  </para>
+			</listitem>
+			<listitem>
+			  <para>
+                <command>'&lt;' </command>: numerical comparison, reported value is less than VALUE
+			  </para>
+			</listitem>
+			<listitem>
+			  <para>
+                <command>'=' </command>: numerical comparison, reported value is equal to VALUE
+			  </para>
+			</listitem>
+			<listitem>
+			  <para>
+                <command>'&lt;>'</command>: numerical comparison, reported value is not equal to VALUE
+			  </para>
+			</listitem>
+			<listitem>
+			  <para>
+                <command>'=='</command>: string comparison, reported value is identical to VALUE
+			  </para>
+			</listitem>
+			<listitem>
+			  <para>
+                <command>'!='</command>: string comparison, reported value is not identical to VALUE
+			  </para>
+			</listitem>
+			<listitem>
+			  <para>
+                <command>'~' </command>: regex match, reported value matches the perl regular expression given by VALUE
+			  </para>
+			</listitem>
+			<listitem>
+			  <para>
+                <command>'!~'</command>: regex match, reported value does not match the perl regular expression given by VALUE
+			  </para>
+			  <para>
+              For perl regular expressions see 'man perlre'.
+			  </para>
+			</listitem>
+		</itemizedlist>
+	  </listitem>
+	</itemizedlist>
+
+  </refsect1>
+  <refsect1>
+    <title>ENVIRONMENT</title>
+
+    <para>
+	None
+    </para>
+
+  </refsect1>
+  <refsect1>
+    <title>Examples</title>
+	<itemizedlist>
+	  <listitem>
+		<example>
+		  <title>classic</title>
+		  <programlisting>command[check_ups_load]=/usr/lib/nagios/plugins/check_nut_plus \
+ -d ups17@localhost  -v "ups.load=w>90:c>=98"
+		  </programlisting>
+
+		  <para>
+			raise warning if the value reported by "ups.load" is 
+			greater than "90" and raise critical error if it is 
+			"greater or equal than "98"
+		  </para>
+		</example>
+	  </listitem>
+	  <listitem>
+		<example>
+		  <title>observe a fixed value</title>
+          <programlisting>command[check_ups_Ubat]=/usr/lib/nagios/plugins/check_nut_plus \
+ -d ups@localhost  -v "battery.voltage=c!=27.0"
+          </programlisting>
+
+          <para>
+			raise critical error if the value reported by 
+			"battery.voltage" it not equal to 27.0
+          </para>
+		</example>
+	  </listitem>
+	  <listitem>
+		<example>
+          <title>observe multiple fixed strings</title>
+          <programlisting>command[check_ups_model]=/usr/lib/nagios/plugins/check_nut_plus \
+ -d myups  -v "device.mfr=c!=MGE UPS SYSTEMS" -v "device.model=c!=Evolution 1150" \
+ -v "device.serial=w!=AV4H4301K"
+          </programlisting>
+
+          <para>
+			raise critical error if "device.mfr" or "device.model"
+			are not the specified ones.
+			raise warning if "device.serial" has changed
+			so you can see if someone has been tinkering ;-)
+          </para>
+		</example>
+	  </listitem>
+	  <listitem>
+		<example> 
+          <title>window discrimitation</title>
+          <programlisting>command[check_ups_Uin]=/usr/lib/nagios/plugins/check_nut_plus \
+ -d otherups@somehost  -v "input.voltage=w>=238:c>=240:w&lt;=225:c&lt;=220"
+          </programlisting>
+
+          <para>
+			critical error on input.voltage >=240 or c&lt;=220
+			no error on input.voltage &lt; 238 and > 220
+			warning otherwise
+          </para>
+		</example>
+	  </listitem>
+	</itemizedlist>
+  </refsect1>
+  <refsect1>
+    <title>FILES</title>
+    <para>
+	  <command>debian/changelog</command> Debian changelog file.
+    </para>
+  </refsect1>
+  <refsect1>
+    <title>SEE ALSO</title>
+
+    <para>perlre(1), &upsc;, http://www.networkupstools.org/, &nrpe;</para>
+
+  </refsect1>
+  <refsect1>
+    <title>BUGS</title>
+    <para>Sure...
+    </para>
+
+  </refsect1>
+  <refsect1>
+    <title>AUTHOR</title>
+
+    <para>This manual page was written by &dhusername; &dhemail; for
+      the <command>&dhpackage;</command> software and may be used by others.  
+      It has been loosely derived from <command>check_ups</command> by
+	  Luca Bertoncello &lt;lucabert@lucabert.de&gt;.
+	  Permission is granted to copy, distribute and/or modify this document 
+	  under
+      the terms of the <acronym>GNU</acronym> Free Documentation
+      License, Version 1.1 or any later version published by the Free
+      Software Foundation; with no Invariant Sections, no Front-Cover
+      Texts and no Back-Cover Texts.</para>
+
+  </refsect1>
+  <refsect1>
+    <title>DISTRIBUTION</title>
+    <para>The  newest  version  of <command>&dhpackage</command> 
+    can be obtained from <ulink url="http://ftp.lihas.de/debian">
+	http://ftp.lihas.de/debian</ulink>
+    </para>
+
+    <!-- <para><command>&dhpackage</command> is (C) 1997-2004 by Christian Recktenwald.
+    </para> -->
+
+    <para>This program is free software; you can redistribute it and/or  modify
+    it  under  the terms of the GNU General Public License as published by 
+    the Free Software Foundation; Version 2. This guarantees your right to 
+    use, modify, and redistribute <command>&dhpackage</command> under certain 
+    conditions. 
+    </para>
+
+    <para>
+       This program is distributed in the hope that it will be useful,
+       but <emphasis>WITHOUT ANY WARRANTY</emphasis>; without even the
+       implied  warranty  of <emphasis>MERCHANTABILITY</emphasis>
+       or <emphasis>FITNESS FOR A PARTICULAR PURPOSE</emphasis>.
+       See the GNU General Public License for more details (it is in
+       the COPYING file  of the &dhpackage distribution).
+    </para>
+
+
+
+  </refsect1>
+</refentry>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:2
+sgml-indent-data:t
+sgml-parent-document:nil
+sgml-default-dtd-file:nil
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+-->
+
+

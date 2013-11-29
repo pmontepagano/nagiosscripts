@@ -1,0 +1,590 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN""http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>check_nut_plus</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"></HEAD
+><BODY
+CLASS="REFENTRY"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><H1
+><A
+NAME="AEN1"
+></A
+>check_nut_plus</H1
+><DIV
+CLASS="REFNAMEDIV"
+><A
+NAME="AEN15"
+></A
+><H2
+>Name</H2
+>check_nut_plus&nbsp;--&nbsp;This nagios plugin reports the status of the UPS using NUT.</DIV
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A
+NAME="AEN18"
+></A
+><H2
+>Synopsis</H2
+><P
+><B
+CLASS="COMMAND"
+>check_nut_plus [ -D ] -d DEVICE -v CHECK_DESC [ -v CHECK_DESC ... ]
+	  </B
+> <BR><B
+CLASS="COMMAND"
+>check_nut_plus [ -V | -h ] </B
+> </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN22"
+></A
+><H2
+>DESCRIPTION</H2
+><P
+>This manual page documents the
+      <B
+CLASS="COMMAND"
+>check_nut_plus</B
+> 
+      command.</P
+><P
+><B
+CLASS="COMMAND"
+>check_nut_plus</B
+> is a program to 
+	generate an <B
+CLASS="COMMAND"
+>nrpe</B
+>(8) suitable output of <B
+CLASS="COMMAND"
+>upsc</B
+>(8),
+	in short a nagios plugin for uninterruptable power supplies (UPS).
+	</P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN30"
+></A
+><H2
+>FEATURES</H2
+><P
+></P
+><UL
+><LI
+><P
+>			Watch and evaluate every value  <B
+CLASS="COMMAND"
+>upsc</B
+>(8) can report.
+			</P
+></LI
+><LI
+><P
+>			The kind of comparison can be specified by OPERATOR.
+			</P
+></LI
+><LI
+><P
+>			Multiple and combined comparison can be specified.
+			</P
+></LI
+></UL
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN40"
+></A
+><H2
+>OPTIONS</H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><CODE
+CLASS="OPTION"
+>-d DEVICE</CODE
+></DT
+><DD
+><P
+>		  	 A device description  <B
+CLASS="COMMAND"
+>upsc</B
+>(8) would accept.
+          </P
+></DD
+><DT
+><CODE
+CLASS="OPTION"
+>-v CHECK_DESC</CODE
+></DT
+><DD
+><P
+>		  A check desciption. See CHECK DESCIPTION below.
+          </P
+></DD
+><DT
+><CODE
+CLASS="OPTION"
+>-D</CODE
+></DT
+><DD
+><P
+>		  Enable debugging.
+          </P
+></DD
+><DT
+><CODE
+CLASS="OPTION"
+>-V</CODE
+></DT
+><DD
+><P
+>			Print version information and exit.
+          </P
+></DD
+><DT
+><CODE
+CLASS="OPTION"
+>-h</CODE
+></DT
+><DD
+><P
+>		    Print help and exit.
+          </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN69"
+></A
+><H2
+>CHECK DESCIPTION</H2
+><P
+></P
+><UL
+><LI
+><P
+>			<B
+CLASS="COMMAND"
+>check_nut-plus -d DEVICE -v CHECK_DESC [ -v CHECK_DESC ... ]</B
+>
+		</P
+></LI
+><LI
+><P
+>			<B
+CLASS="COMMAND"
+>DEVICE :</B
+> a device description <B
+CLASS="COMMAND"
+>upsc</B
+>(8) would accept.
+		</P
+></LI
+><LI
+><P
+>			<B
+CLASS="COMMAND"
+>CHECK_DESC := UPSCKEY '=' SEVERITY OPERATOR VALUE [ ':' SEVERITY OPERATOR VALUE ] ...</B
+>
+		</P
+></LI
+><LI
+><P
+>			<B
+CLASS="COMMAND"
+>UPSCKEY :</B
+> key string as listed by <B
+CLASS="COMMAND"
+>upsc</B
+>(8), see 'man upsc'
+		</P
+></LI
+><LI
+><P
+>			<B
+CLASS="COMMAND"
+>SEVERITY := { 'w' | 'c' }</B
+>
+		</P
+><P
+></P
+><UL
+><LI
+><P
+>				  <B
+CLASS="COMMAND"
+>'w'</B
+>: warning
+			  </P
+></LI
+><LI
+><P
+>				  <B
+CLASS="COMMAND"
+>'c'</B
+>: critical errors
+			  </P
+></LI
+></UL
+></LI
+><LI
+><P
+>			<B
+CLASS="COMMAND"
+>OPERATOR := { '&#62;=' | '&#62;' | '&lt;' | '&lt;=' | '==' | '=' | '&lt;&#62;' | '!=' | '~' | '!~' }</B
+>
+		</P
+><P
+></P
+><UL
+><LI
+><P
+>                <B
+CLASS="COMMAND"
+>'&#62;='</B
+>: numerical comparison, reported value is greater or equal than VALUE
+			  </P
+></LI
+><LI
+><P
+>                <B
+CLASS="COMMAND"
+>'&#62;' </B
+>: numerical comparison, reported value is greater than VALUE
+			  </P
+></LI
+><LI
+><P
+>                <B
+CLASS="COMMAND"
+>'&lt;='</B
+>: numerical comparison, reported value is less or equal than VALUE
+			  </P
+></LI
+><LI
+><P
+>                <B
+CLASS="COMMAND"
+>'&lt;' </B
+>: numerical comparison, reported value is less than VALUE
+			  </P
+></LI
+><LI
+><P
+>                <B
+CLASS="COMMAND"
+>'=' </B
+>: numerical comparison, reported value is equal to VALUE
+			  </P
+></LI
+><LI
+><P
+>                <B
+CLASS="COMMAND"
+>'&lt;&#62;'</B
+>: numerical comparison, reported value is not equal to VALUE
+			  </P
+></LI
+><LI
+><P
+>                <B
+CLASS="COMMAND"
+>'=='</B
+>: string comparison, reported value is identical to VALUE
+			  </P
+></LI
+><LI
+><P
+>                <B
+CLASS="COMMAND"
+>'!='</B
+>: string comparison, reported value is not identical to VALUE
+			  </P
+></LI
+><LI
+><P
+>                <B
+CLASS="COMMAND"
+>'~' </B
+>: regex match, reported value matches the perl regular expression given by VALUE
+			  </P
+></LI
+><LI
+><P
+>                <B
+CLASS="COMMAND"
+>'!~'</B
+>: regex match, reported value does not match the perl regular expression given by VALUE
+			  </P
+><P
+>              For perl regular expressions see 'man perlre'.
+			  </P
+></LI
+></UL
+></LI
+></UL
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN131"
+></A
+><H2
+>ENVIRONMENT</H2
+><P
+>	None
+    </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN134"
+></A
+><H2
+>Examples</H2
+><P
+></P
+><UL
+><LI
+><DIV
+CLASS="EXAMPLE"
+><A
+NAME="AEN138"
+></A
+><P
+><B
+>Example 1. classic</B
+></P
+><PRE
+CLASS="PROGRAMLISTING"
+>command[check_ups_load]=/usr/lib/nagios/plugins/check_nut_plus \
+ -d ups17@localhost  -v "ups.load=w&#62;90:c&#62;=98"
+		  </PRE
+><P
+>			raise warning if the value reported by "ups.load" is 
+			greater than "90" and raise critical error if it is 
+			"greater or equal than "98"
+		  </P
+></DIV
+></LI
+><LI
+><DIV
+CLASS="EXAMPLE"
+><A
+NAME="AEN143"
+></A
+><P
+><B
+>Example 2. observe a fixed value</B
+></P
+><PRE
+CLASS="PROGRAMLISTING"
+>command[check_ups_Ubat]=/usr/lib/nagios/plugins/check_nut_plus \
+ -d ups@localhost  -v "battery.voltage=c!=27.0"
+          </PRE
+><P
+>			raise critical error if the value reported by 
+			"battery.voltage" it not equal to 27.0
+          </P
+></DIV
+></LI
+><LI
+><DIV
+CLASS="EXAMPLE"
+><A
+NAME="AEN148"
+></A
+><P
+><B
+>Example 3. observe multiple fixed strings</B
+></P
+><PRE
+CLASS="PROGRAMLISTING"
+>command[check_ups_model]=/usr/lib/nagios/plugins/check_nut_plus \
+ -d myups  -v "device.mfr=c!=MGE UPS SYSTEMS" -v "device.model=c!=Evolution 1150" \
+ -v "device.serial=w!=AV4H4301K"
+          </PRE
+><P
+>			raise critical error if "device.mfr" or "device.model"
+			are not the specified ones.
+			raise warning if "device.serial" has changed
+			so you can see if someone has been tinkering ;-)
+          </P
+></DIV
+></LI
+><LI
+><DIV
+CLASS="EXAMPLE"
+><A
+NAME="AEN153"
+></A
+><P
+><B
+>Example 4. window discrimitation</B
+></P
+><PRE
+CLASS="PROGRAMLISTING"
+>command[check_ups_Uin]=/usr/lib/nagios/plugins/check_nut_plus \
+ -d otherups@somehost  -v "input.voltage=w&#62;=238:c&#62;=240:w&lt;=225:c&lt;=220"
+          </PRE
+><P
+>			critical error on input.voltage &#62;=240 or c&lt;=220
+			no error on input.voltage &lt; 238 and &#62; 220
+			warning otherwise
+          </P
+></DIV
+></LI
+></UL
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN157"
+></A
+><H2
+>FILES</H2
+><P
+>	  <B
+CLASS="COMMAND"
+>debian/changelog</B
+> Debian changelog file.
+    </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN161"
+></A
+><H2
+>SEE ALSO</H2
+><P
+>perlre(1), <B
+CLASS="COMMAND"
+>upsc</B
+>(8), http://www.networkupstools.org/, <B
+CLASS="COMMAND"
+>nrpe</B
+>(8)</P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN166"
+></A
+><H2
+>BUGS</H2
+><P
+>Sure...
+    </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN169"
+></A
+><H2
+>AUTHOR</H2
+><P
+>This manual page was written by LiHAS <CODE
+CLASS="EMAIL"
+>&#60;<A
+HREF="mailto:support@lihas.de"
+>support@lihas.de</A
+>&#62;</CODE
+> for
+      the <B
+CLASS="COMMAND"
+>check_nut_plus</B
+> software and may be used by others.  
+      It has been loosely derived from <B
+CLASS="COMMAND"
+>check_ups</B
+> by
+	  Luca Bertoncello &lt;lucabert@lucabert.de&gt;.
+	  Permission is granted to copy, distribute and/or modify this document 
+	  under
+      the terms of the <ACRONYM
+CLASS="ACRONYM"
+>GNU</ACRONYM
+> Free Documentation
+      License, Version 1.1 or any later version published by the Free
+      Software Foundation; with no Invariant Sections, no Front-Cover
+      Texts and no Back-Cover Texts.</P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN176"
+></A
+><H2
+>DISTRIBUTION</H2
+><P
+>The  newest  version  of <B
+CLASS="COMMAND"
+>check_nut_plus</B
+> 
+    can be obtained from <A
+HREF="http://ftp.lihas.de/debian"
+TARGET="_top"
+>	http://ftp.lihas.de/debian</A
+>
+    </P
+><P
+>This program is free software; you can redistribute it and/or  modify
+    it  under  the terms of the GNU General Public License as published by 
+    the Free Software Foundation; Version 2. This guarantees your right to 
+    use, modify, and redistribute <B
+CLASS="COMMAND"
+>check_nut_plus</B
+> under certain 
+    conditions. 
+    </P
+><P
+>       This program is distributed in the hope that it will be useful,
+       but <SPAN
+CLASS="emphasis"
+><I
+CLASS="EMPHASIS"
+>WITHOUT ANY WARRANTY</I
+></SPAN
+>; without even the
+       implied  warranty  of <SPAN
+CLASS="emphasis"
+><I
+CLASS="EMPHASIS"
+>MERCHANTABILITY</I
+></SPAN
+>
+       or <SPAN
+CLASS="emphasis"
+><I
+CLASS="EMPHASIS"
+>FITNESS FOR A PARTICULAR PURPOSE</I
+></SPAN
+>.
+       See the GNU General Public License for more details (it is in
+       the COPYING file  of the check_nut_plus distribution).
+    </P
+></DIV
+></BODY
+></HTML
+>

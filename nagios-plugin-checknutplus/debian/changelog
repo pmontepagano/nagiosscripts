@@ -1,0 +1,11 @@
+nagios-plugin-checknutplus (1.8) unstable; urgency=low
+
+  * upstream
+
+ -- LiHAS Stuttgart <support@lihas.de>  Thu, 19 Sep 2013 19:39:50 +0200
+
+nagios-plugin-checknutplus (1.0) unstable; urgency=low
+
+  * Initial Release.
+
+ -- LiHAS Stuttgart <support@lihas.de>  Thu, 19 Sep 2013 19:04:54 +0200
