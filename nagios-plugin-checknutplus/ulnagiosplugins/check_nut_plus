@@ -9,7 +9,7 @@ use utils qw(&print_revision &support &usage);
 my ( $opt_V , $opt_d, $opt_D, $limits, $opt_h );
 my $progname = (split '/',$0)[-1];
 my $revision = "1.".qw$Revision: 6 $[1];
-my $upsc = "/bin/upsc";
+my $upsc = "/usr/local/bin/upsc";
 
 sub print_help ();
 sub print_usage ();
