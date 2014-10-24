@@ -6,6 +6,18 @@ import string
 import urllib2
 import getopt
 import sys
+import os
+
+try:
+    del os.environ['http_proxy']
+except:
+    pass
+
+try:
+    del os.environ['http_proxy']
+except:
+    pass
+
 
 
 def usage():
@@ -36,6 +48,7 @@ except getopt.GetoptError:
 # Defaults
 url  = "http://127.0.0.1"
 path = "/status"
+
 
 # Overrides and options
 for name,value in options:
