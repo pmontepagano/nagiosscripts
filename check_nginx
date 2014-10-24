@@ -6,11 +6,7 @@ import string
 import urllib2
 import getopt
 import sys
-import os
 
-
-# Deshabilito el proxy para la bl
-del os.environ['http_proxy']
 
 def usage():
     print """Usage: check_nginx [OPTION]...
