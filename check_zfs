@@ -58,6 +58,8 @@ my $verbose=$ARGV[1];
 my $size="";
 my $used="";
 my $avail="";
+my $expandsz="";
+my $frag="";
 my $cap="";
 my $health="";
 my $dmge="";
@@ -77,9 +79,9 @@ if (! open STAT, "$statcommand|") {
 
 while(<STAT>) {
 	chomp;
-	next if (/^NAME\s+SIZE\s+USED\s+AVAIL\s+CAP\s+HEALTH\s+ALTROOT/);
+	next if (/^NAME\s+SIZE\s+ALLOC\s+FREE\s+EXPANDSZ\s+FRAG\s+CAP\s+DEDUP\s+HEALTH\s+ALTROOT/);
 	if (/^${pool}\s+/) {
-		($size, $used, $avail, $cap, $dedup, $health) = /^${pool}\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)/;
+		($size, $used, $avail, $expandsz, $frag, $cap, $dedup, $health) = /^${pool}\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)/;
 	}
 }
 
