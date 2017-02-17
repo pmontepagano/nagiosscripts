@@ -1,0 +1,186 @@
+#!/usr/bin/env ruby
+
+# check_zones_in_sync
+#
+# Check if zones are in sync on multiple DNS servers really fast.
+#
+# Info and updates: https://github.com/igloonet/icinga-plugins
+
+# Copyright (c) 2014 igloonet, s.r.o.   https://igloonet.cz/
+#         
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal in the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+#           
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#   
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+# LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+# OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+VERSION=0.1
+
+require 'optparse'
+require 'ostruct'
+require 'celluloid/io'
+require 'timeout'
+
+# Option parsing
+class OptparseChzones
+  def self.parse(args)
+    options = OpenStruct.new
+    options.servers = []
+    options.file = 'domains.txt'
+    options.timing = false
+    options.workers = 50
+    options.timeout = 2
+
+    opt_parser = OptionParser.new do |opts|
+      opts.banner = "Usage: check_zones_in_sync -s dns,servers [-f domains.txt]"
+
+      opts.separator ""
+      opts.separator "Specific options:"
+
+      opts.on("-s", "--servers x,y,z", Array, "DNS servers to check") do |s|
+        options.servers = s
+      end
+
+      opts.on("-w", "--workers 100", Integer, "Number for workers. Experiment to achieve best results but do not set too high.") do |w|
+        options.workers = w * 1
+      end
+
+      opts.on("-f", "--file [path_to_domain_file]", "File with list of zones") do |f|
+        options.file = f
+      end
+
+      opts.on("-d", "--[no-]debug", "Turn on debugging") do |d|
+        options.debug = d
+        options.timing = true
+      end
+
+      opts.on("-t", "--[no-]timing", "Turn on spent time info") do |t|
+        options.timing = t
+      end
+
+      opts.on("-v", "--version") do
+        puts "check_zones_in_sync\n\nversion: #{VERSION}"
+      end
+      opts.on_tail("-h", "--help", "Show this help") do
+        puts opts
+      end
+    end
+
+    opt_parser.parse!(args)
+
+    options
+  end
+end
+
+module Celluloid
+  module IO
+    class DNSResolver
+      def initialize(nameserver)
+         @nameservers = [nameserver]
+
+        # TODO: fall back on other nameservers if the first one is unavailable
+        @server = @nameservers.first
+
+        # The non-blocking secret sauce is here, as this is actually a
+        # Celluloid::IO::UDPSocket
+        @socket = UDPSocket.new
+      end
+      
+      def build_query_soa(zone)
+        Resolv::DNS::Message.new.tap do |query|
+          query.id = self.class.generate_id
+          query.rd = 1
+          query.add_question zone, Resolv::DNS::Resource::IN::SOA
+        end
+      end
+
+      def get_serial(zone)
+        query = build_query_soa(zone)
+        @socket.send query.encode, 0, @server, DNS_PORT
+        data, _ = @socket.recvfrom(512)
+        response = Resolv::DNS::Message.decode(data)
+        return response.answer.select{|record| record[0].to_s == zone}.collect{|record| record[2].serial}.first
+      end
+    end
+    
+  end
+end
+
+# Zone check class
+class ZoneCheck
+  include Celluloid
+
+  # setup resolvers for all servers
+  def initialize(options = {})
+    @options = options
+    @servers = options.servers
+  end
+
+  # check zone 
+  def check(zone)
+    puts "checking zone #{zone}" if @options.debug
+    @zone = zone
+    responses = []
+    # get serial from every server
+    @servers.each do |server|
+      begin
+        Timeout::timeout(@options.timeout) {
+          serial = Celluloid::IO::DNSResolver.new(server).get_serial(@zone)
+          responses.push serial
+          return [2, "Zone #{@zone} is missing on #{server}."] if serial.nil?
+          puts "Checked #{server} SOA=#{serial}" if @options.debug
+        }
+      rescue Timeout::Error
+        puts "Checked #{server} Timed Out" if @options.debug
+        return [2, "Zone #{@zone} timed out on #{server}."]
+      end
+    end
+
+    # in case all serials are not same, we return critical
+    if responses.max == responses.min
+      return [0, "Zone #{@zone} OK"]
+    else
+      return [2, "Zone #{@zone} NOT in sync."]
+    end
+  end
+end
+
+# get options, start timer and create new instance of ZoneCheck
+options = OptparseChzones.parse(ARGV)
+t1 = Time.now if options.timing
+Celluloid.logger = nil
+
+# create pool and fill it with zones
+results = []
+zones = File.readlines(options.file)
+pool = ZoneCheck.pool(size: options.workers, args: [options])
+zones.map {|z| results << pool.future.check(z.chomp)}
+
+# default message is OK
+exit_value = 0
+message = "Servers #{options.servers.join(", ")} in sync."
+
+# go through results and modify exit value and message if not 0
+results.each do |f| 
+  exit_value, message = f.value unless f.value.first == 0
+end
+
+# print spent time if enabled
+puts "Spent #{Time.now - t1} secs" if options.timing
+
+# return OK if we reached end
+puts message
+exit exit_value
