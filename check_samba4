@@ -1,0 +1,13 @@
+#!/bin/bash
+# check the replication of samba4
+# by thomas manninger, siedl networks gmbh
+
+errors=$(samba-tool drs showrepl 2> /dev/null | grep "consecutive failure(s)" | sed -e "s/\t//g" | grep -v "^0" | wc -l)
+
+if [ $errors -gt 0 ]; then
+        echo "CRITICAL: $errors replication links fails!";
+        exit 2
+fi
+
+echo "OK"
+exit 0
