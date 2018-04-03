@@ -29,7 +29,7 @@ $opts{critical} *= 60;
 my %problems;
 my $problem_status;
 
-foreach my $qdir (qw(archive bounces commands in news out retry)) {
+foreach my $qdir (qw(archive bounces commands in news out retry shunt)) {
 	# Get all the 'pickle' files in the queue directory
 	my @files = File::Find::Rule->file->name('*.pck')->in("$qfiles_base/$qdir");
 	next unless @files;
