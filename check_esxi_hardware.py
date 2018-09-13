@@ -24,7 +24,7 @@
 # Copyright (c) 2008 David Ligeret
 # Copyright (c) 2009 Joshua Daniel Franklin
 # Copyright (c) 2010 Branden Schneider
-# Copyright (c) 2010-2016 Claudio Kuenzler
+# Copyright (c) 2010-2018 Claudio Kuenzler
 # Copyright (c) 2010 Samir Ibradzic
 # Copyright (c) 2010 Aaron Rogers
 # Copyright (c) 2011 Ludovic Hutin
@@ -38,6 +38,7 @@
 # Copyright (c) 2015 Andreas Gottwald
 # Copyright (c) 2015 Stanislav German-Evtushenko
 # Copyright (c) 2015 Stefan Roos
+# Copyright (c) 2018 Peter Newman
 #
 # The VMware 4.1 CIM API is documented here:
 #   http://www.vmware.com/support/developer/cim-sdk/4.1/smash/cim_smash_410_prog.pdf
@@ -235,6 +236,26 @@
 #@ Author : Claudio Kuenzler (www.claudiokuenzler.com)
 #@ Reason : Distinguish between pywbem 0.7 and 0.8 (which is now released)
 #@---------------------------------------------------
+#@ Date   : 20160531
+#@ Author : Claudio Kuenzler (www.claudiokuenzler.com)
+#@ Reason : Add parameter for variable CIM port (useful when behind NAT)
+#@---------------------------------------------------
+#@ Date   : 20161013
+#@ Author : Claudio Kuenzler (www.claudiokuenzler.com)
+#@ Reason : Added support for pywbem 0.9.x (and upcoming releases)
+#@---------------------------------------------------
+#@ Date   : 20170905
+#@ Author : Claudio Kuenzler (www.claudiokuenzler.com)
+#@ Reason : Added option to ignore LCD/Display related elements (--no-lcd)
+#@---------------------------------------------------
+#@ Date   : 20180329
+#@ Author : Claudio Kuenzler (www.claudiokuenzler.com)
+#@ Reason : Try to use internal pywbem function to determine version
+#@---------------------------------------------------
+#@ Date   : 20180411
+#@ Author : Peter Newman
+#@ Reason : Throw an unknown if we can't fetch the data for some reason
+#@---------------------------------------------------
 
 import sys
 import time
@@ -243,7 +264,7 @@ import re
 import pkg_resources
 from optparse import OptionParser,OptionGroup
 
-version = '20160411'
+version = '20180411'
 
 NS = 'root/cimv2'
 hosturl = ''
@@ -253,16 +274,16 @@ ClassesToCheck = [
   'OMC_SMASHFirmwareIdentity',
   'CIM_Chassis',
   'CIM_Card',
-#  'CIM_ComputerSystem',
+  'CIM_ComputerSystem',
   'CIM_NumericSensor',
-#  'CIM_Memory',
+  'CIM_Memory',
   'CIM_Processor',
   'CIM_RecordLog',
   'OMC_DiscreteSensor',
   'OMC_Fan',
   'OMC_PowerSupply',
-#  'VMware_StorageExtent',
-#  'VMware_Controller',
+  'VMware_StorageExtent',
+  'VMware_Controller',
   'VMware_StorageVolume',
   'VMware_Battery',
   'VMware_SASSATAPort'
@@ -307,6 +328,9 @@ perf_Prefix = {
 # host name
 hostname=''
 
+# cim port
+cimport=''
+
 # user
 user=''
 
@@ -337,6 +361,7 @@ get_volts   = True
 get_current = True
 get_temp    = True
 get_fan     = True
+get_lcd     = True
 
 # define exit codes
 ExitOK = 0
@@ -461,14 +486,11 @@ def verboseoutput(message) :
 # ----------------------------------------------------------------------
 
 def getopts() :
-  global hosturl,user,password,vendor,verbose,perfdata,urlise_country,timeout,ignore_list,get_power,get_volts,get_current,get_temp,get_fan
-  usage = "usage: %prog  https://hostname user password system [verbose]\n" \
-    "example: %prog https://my-shiny-new-vmware-server root fakepassword dell\n\n" \
-    "or, using new style options:\n\n" \
-    "usage: %prog -H hostname -U username -P password [-V system -v -p -I XX]\n" \
-    "example: %prog -H my-shiny-new-vmware-server -U root -P fakepassword -V auto -I uk\n\n" \
+  global hosturl,cimport,user,password,vendor,verbose,perfdata,urlise_country,timeout,ignore_list,get_power,get_volts,get_current,get_temp,get_fan,get_lcd
+  usage = "usage: %prog -H hostname -U username -P password [-C port -V system -v -p -I XX]\n" \
+    "example: %prog -H my-shiny-new-vmware-server -U root -P fakepassword -C 5989 -V auto -I uk\n\n" \
     "or, verbosely:\n\n" \
-    "usage: %prog --host=hostname --user=username --pass=password [--vendor=system --verbose --perfdata --html=XX]\n"
+    "usage: %prog --host=hostname --user=username --pass=password [--cimport=port --vendor=system --verbose --perfdata --html=XX]\n"
 
   parser = OptionParser(usage=usage, version="%prog "+version)
   group1 = OptionGroup(parser, 'Mandatory parameters')
@@ -479,6 +501,7 @@ def getopts() :
   group1.add_option("-P", "--pass", dest="password", \
       help="password, if password matches file:<path>, first line of given file will be used as password", metavar="PASS")
 
+  group2.add_option("-C", "--cimport", dest="cimport", help="CIM port (default 5989)", metavar="CIMPORT")
   group2.add_option("-V", "--vendor", dest="vendor", help="Vendor code: auto, dell, hp, ibm, intel, or unknown (default)", \
       metavar="VENDOR", type='choice', choices=['auto','dell','hp','ibm','intel','unknown'],default="unknown")
   group2.add_option("-v", "--verbose", action="store_true", dest="verbose", default=False, \
@@ -501,6 +524,8 @@ def getopts() :
       help="don't collect temperature performance data")
   group2.add_option("--no-fan", action="store_false", dest="get_fan", default=True, \
       help="don't collect fan performance data")
+  group2.add_option("--no-lcd", action="store_false", dest="get_lcd", default=True, \
+      help="don't collect lcd/front display status")
 
   parser.add_option_group(group1)
   parser.add_option_group(group2)
@@ -546,6 +571,7 @@ def getopts() :
 
     user=options.user
     password=options.password
+    cimport=options.cimport
     vendor=options.vendor.lower()
     verbose=options.verbose
     perfdata=options.perfdata
@@ -557,6 +583,7 @@ def getopts() :
     get_current=options.get_current
     get_temp=options.get_temp
     get_fan=options.get_fan
+    get_lcd=options.get_lcd
 
   # if user or password starts with 'file:', use the first string in file as user, second as password
   if (re.match('^file:', user) or re.match('^file:', password)):
@@ -588,11 +615,29 @@ if os_platform != "win32":
     print 'UNKNOWN: Execution time too long!'
     sys.exit(ExitUnknown)
 
+if cimport:
+  verboseoutput("Using manually defined CIM port "+cimport)
+  hosturl += ':'+cimport 
+  
+# Append lcd related elements to ignore list if --no-lcd was used
+verboseoutput("LCD Status: %s" % get_lcd)
+if not get_lcd:
+  ignore_list.append("System Board 1 LCD Cable Pres 0: Connected")
+  ignore_list.append("System Board 1 VGA Cable Pres 0: Connected")
+  ignore_list.append("Front Panel Board 1 FP LCD Cable 0: Connected")
+  ignore_list.append("Front Panel Board 1 FP LCD Cable 0: Config Error")
+
 # connection to host
 verboseoutput("Connection to "+hosturl)
 # pywbem 0.7.0 handling is special, some patched 0.7.0 installations work differently
-pywbemversion = pkg_resources.get_distribution("pywbem").version
+try:
+  pywbemversion = pywbem.__version__
+except:
+  pywbemversion = pkg_resources.get_distribution("pywbem").version
+else:
+  pywbemversion = pywbem.__version__
 verboseoutput("Found pywbem version "+pywbemversion)
+
 if '0.7.' in pywbemversion:
   try:
     conntest = pywbem.WBEMConnection(hosturl, (user,password))
@@ -605,7 +650,7 @@ if '0.7.' in pywbemversion:
     verboseoutput("Connection worked")
     wbemclient = pywbem.WBEMConnection(hosturl, (user,password))
 # pywbem 0.8.0 and later
-elif '0.8.' in pywbemversion:
+else:
   wbemclient = pywbem.WBEMConnection(hosturl, (user,password), NS, no_verification=True)
 
 # Add a timeout for the script. When using with Nagios, the Nagios timeout cannot be < than plugin timeout.
@@ -627,6 +672,9 @@ if vendor=='auto':
     c=wbemclient.EnumerateInstances('CIM_Chassis')
   except pywbem.cim_operations.CIMError,args:
     if ( args[1].find('Socket error') >= 0 ):
+      print "UNKNOWN: %s" %args
+      sys.exit (ExitUnknown)
+    elif ( args[1].find('ThreadPool --- Failed to enqueue request') >= 0 ):
       print "UNKNOWN: %s" %args
       sys.exit (ExitUnknown)
     else:
@@ -655,6 +703,9 @@ for classe in ClassesToCheck :
     instance_list = wbemclient.EnumerateInstances(classe)
   except pywbem.cim_operations.CIMError,args:
     if ( args[1].find('Socket error') >= 0 ):
+      print "UNKNOWN: %s" %args
+      sys.exit (ExitUnknown)
+    elif ( args[1].find('ThreadPool --- Failed to enqueue request') >= 0 ):
       print "UNKNOWN: %s" %args
       sys.exit (ExitUnknown)
     else:
@@ -774,7 +825,6 @@ for classe in ClassesToCheck :
         verboseoutput("    Family = %d" % instance['Family'])
         verboseoutput("    CurrentClockSpeed = %dMHz" % instance['CurrentClockSpeed'])
 
-
       # HP Check
       if vendor == "hp" :
         if instance['HealthState'] is not None :
@@ -790,11 +840,11 @@ for classe in ClassesToCheck :
             30 : ExitCritical,  # Non-recoverable Error
           }[elementStatus]
           if (interpretStatus == ExitCritical) :
-            verboseoutput("GLobal exit set to CRITICAL")
+            verboseoutput("Global exit set to CRITICAL")
             GlobalStatus = ExitCritical
             ExitMsg += " CRITICAL : %s " % elementNameValue
           if (interpretStatus == ExitWarning and GlobalStatus != ExitCritical) :
-            verboseoutput("GLobal exit set to WARNING")
+            verboseoutput("Global exit set to WARNING")
             GlobalStatus = ExitWarning
             ExitMsg += " WARNING : %s " % elementNameValue
           # Added the following for when GlobalStatus is ExitCritical and a warning is detected
@@ -811,8 +861,6 @@ for classe in ClassesToCheck :
       elif (vendor == "dell" or vendor == "intel" or vendor == "ibm" or vendor=="unknown") :
         # Added 20121027 As long as Dell doesnt correct these CIM elements return code we have to ignore it
         ignore_list.append("System Board 1 Riser Config Err 0: Connected")
-        ignore_list.append("System Board 1 LCD Cable Pres 0: Connected")
-        ignore_list.append("System Board 1 VGA Cable Pres 0: Connected")
         ignore_list.append("Add-in Card 4 PEM Presence 0: Connected")
         if instance['OperationalStatus'] is not None :
           elementStatus = instance['OperationalStatus'][0]
@@ -845,7 +893,7 @@ for classe in ClassesToCheck :
             GlobalStatus = ExitCritical
             ExitMsg += " CRITICAL : %s " % elementNameValue
           if (interpretStatus == ExitWarning and GlobalStatus != ExitCritical) :
-            verboseoutput("GLobal exit set to WARNING")
+            verboseoutput("Global exit set to WARNING")
             GlobalStatus = ExitWarning
             ExitMsg += " WARNING : %s " % elementNameValue
           # Added same logic as in 20100702 here, otherwise Dell servers would return UNKNOWN instead of OK
