@@ -31,14 +31,14 @@ use strict;
 no utf8;
 
 # Nagios
-use lib "NAGIOS_LIB";
+use lib "/usr/lib/nagios/plugins";
 use utils qw(%ERRORS $TIMEOUT);
 use POSIX qw(strftime difftime);
 use Getopt::Long;
 Getopt::Long::Configure('bundling');
 
 # BackupPC
-use lib "BACKUPPC_LIB";
+use lib "/usr/share/backuppc/lib";
 use BackupPC::Lib;
 
 my $version = '1.1.0';
