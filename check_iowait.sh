@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ "$1" = "-w" ] && [ "$2" -gt "0" ] && [ "$3" = "-c" ] && [ "$4" -gt "0" ]; then
-	IOWAIT=`iostat -y -c 10 1|sed -n "4p"|awk {'print $4'}|cut -d. -f1` 
+	IOWAIT=`iostat -y -c 5 1|sed -n "4p"|awk {'print $4'}|cut -d. -f1` 
 #	echo " ##### DEBUG:	$IOWAIT " 
         if [ "$IOWAIT" -ge "$4" ]; then
                 echo "IO Wait: CRITICAL - $IOWAIT % |IOWAIT=$IOWAIT;;;;"
