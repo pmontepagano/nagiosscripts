@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import ldap3 # Será necesario instalarlo
 import sys, os, getopt 
 from ldap3 import ALL,MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE
@@ -49,9 +50,14 @@ if __name__ == "__main__":
                 result_dict[item].append(dn_actual)
             else:
                 result_dict[item]=[dn_actual]
-    
+   
+    repetidos = 0 
     for key,value in result_dict.items():
         if len(value)>1:
-            sys.exit(2)
+            repetidos += 1
+    if repetidos:     
+        print('WARNING: {} repetidos | repetidos={}'.format(repetidos, repetidos))
+        sys.exit(1)
 
+    print('OK: {} repetidos | repetidos={}'.format(repetidos, repetidos))
     sys.exit(0)
