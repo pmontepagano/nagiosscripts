@@ -1,0 +1,28 @@
+#!/bin/bash
+VERSION="Version 1.0"
+AUTHOR="UTI-CCC-2019"
+
+# Exit codes
+STATE_OK=0
+STATE_WARNING=1
+STATE_CRITICAL=2
+STATE_UNKNOWN=3
+
+function print_revision {
+   echo "$VERSION - $AUTHOR"
+}
+
+
+# MAIN
+ratelimited_users=$(grep -ir "ratelimit.lua:610: ratelimit" /var/log/messages| cut -d '"' -f 2 | cut -d "(" -f 2 | cut -d ":" -f 2 | cut -d ")" -f 1 | sort | uniq)
+
+ratelimited_users_ammount=$(echo "$ratelimited_users" | wc -l)
+
+if [ $ratelimited_users_ammount -lt 0 ];
+then
+   echo "Rspamd ratelimited exceeded. Users: $ratelimited_users"
+   exit $STATE_CRITICAL
+else
+   echo $STATE_OK
+fi
+
