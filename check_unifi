@@ -50,10 +50,10 @@ parser.add_argument(
     '-s', '--siteid', default='default',
     help='the site ID, UniFi >=3.x only (default "default")')
 parser.add_argument(
-    '-w', '--warning', default=None, type=int,
+    '-w', '--warning', default=0, type=int,
     help='amount of APs to be down for WARNING (default: none)')
 parser.add_argument(
-    '-c', '--critical', default=None, type=int,
+    '-c', '--critical', default=0, type=int,
     help='amount of APs to be down for CRITICAL (default: none)')
 parser.add_argument(
     '-a', '--ap', default='',
