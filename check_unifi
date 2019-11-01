@@ -93,14 +93,15 @@ for ap in aps:
             offline_names.append(ap['name'])
 
     # If a specific AP was specified, record its specific status
-    if ap['name'] == args.ap:
-        ap_state = ap['state']
-        if ap['state'] == 1:
-            ap_code = OK
-            ap_message = "AP %s Online" % args.ap
-        else:
-            ap_code = CRITICAL
-            ap_message = "AP %s Offline" % args.ap
+    if 'name' in ap:
+        if ap['name'] == args.ap:
+            ap_state = ap['state']
+            if ap['state'] == 1:
+                ap_code = OK
+                ap_message = "AP %s Online" % args.ap
+            else:
+                ap_code = CRITICAL
+                ap_message = "AP %s Offline" % args.ap
 
 if args.ap != "":
     if ap_message == "":
