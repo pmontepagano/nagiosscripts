@@ -27,8 +27,8 @@ use Net::DNS::Resolver;
 use Net::DNS::Packet;
 use Net::DNS::RR;
 
-use vars qw($opt_V $opt_h $opt_H $opt_z $opt_M $opt_t $opt_r $PROGNAME $verbose);
-use lib "/usr/lib/nagios/plugins"; 
+use vars qw($opt_V $opt_h $opt_H $opt_z $opt_M $opt_t $opt_r $opt_w $PROGNAME $verbose);
+use lib "/usr/lib/nagios/plugins";
 use utils qw($TIMEOUT %ERRORS &print_revision &support);
 
 $PROGNAME="check_zone";
@@ -49,7 +49,8 @@ GetOptions
 	 "z=s" => \$opt_z, "zone=s"     => \$opt_z,
 	 "M=s" => \$opt_M, "master=s"   => \$opt_M,
 	 "t=s" => \$opt_t, "timeout=i"  => \$opt_t,
-	 "H=s" => \$opt_H, "hostname=s" => \$opt_H);
+	 "H=s" => \$opt_H, "hostname=s" => \$opt_H,
+	 "w=s" => \$opt_w, "warning=i"  => \$opt_w);
 
 if ($opt_V) {
     print_revision($PROGNAME,'$Revision: 0.01 $ ');
@@ -69,13 +70,16 @@ unless ($host) {
     exit $ERRORS{'UNKNOWN'};
 }
 
-my ($timeout, $retries);
+my ($timeout, $retries, $warning);
 
 $timeout = $TIMEOUT;
 ($opt_t) && ($opt_t =~ /^([0-9]+)$/) && ($timeout = $1);
 
 $retries = 2;
 ($opt_r) && ($opt_r =~ /^([0-9]+)$/) && ($retries = $1);
+
+$warning = 0;
+($opt_w) && ($opt_w =~ /^([0-9]+)$/) && ($warning = $1);
 
 my $zone = $opt_z;
 unless ($zone) {
@@ -149,18 +153,23 @@ unless (($soa_req->answer)[0]->type eq "SOA") {
     exit $ERRORS{'CRITICAL'};
 }
 
-unless ($serial == ($soa_req->answer)[0]->serial) {
-    print "Serial not up-to-date: is ". ($soa_req->answer)[0]->serial . ", should be $serial\n";
+unless (int($serial) - int(($soa_req->answer)[0]->serial) <= $warning) {
+    print "CRITICAL - Serial not up-to-date: is ". ($soa_req->answer)[0]->serial . ", should be $serial\n";
     exit $ERRORS{'CRITICAL'};
 }
 
-print "Serial for $zone: $serial\n";
+unless ($serial == ($soa_req->answer)[0]->serial) {
+    print "WARNING - Serial not up-to-date: is ". ($soa_req->answer)[0]->serial . ", should be $serial\n";
+    exit $ERRORS{'WARNING'};
+}
+
+print "OK - Serial for $zone: $serial\n";
 exit $ERRORS{"OK"};
 
 #### subs
 
 sub print_usage () {
-	print "Usage: $PROGNAME -H <host> [-r <retries>] -M <master> -z <zone> [-v verbose]\n";
+	print "Usage: $PROGNAME -H <host> [-r <retries>] -M <master> -z <zone> [-v verbose] [-w <warning soa delta>]\n";
 }
 
 sub print_help () {
